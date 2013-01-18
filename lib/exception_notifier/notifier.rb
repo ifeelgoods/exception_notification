@@ -78,6 +78,10 @@ class ExceptionNotifier
       end
     end
 
+    def self.notify(exception, options={})
+      exception_notification(Rails.env, exception, options)
+    end
+
     def exception_notification(env, exception, options={})
       load_custom_views
 
