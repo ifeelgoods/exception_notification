@@ -17,6 +17,12 @@ class ExceptionNotifier
     []
   end
 
+  def self.conditionally_ignored(ignore_proc, env, exception)
+    ignore_proc.call(env, exception)
+  rescue Exception => ex
+    puts 'rescue'
+  end
+
   def initialize(app, options = {})
     @app, @options = app, options
 
@@ -47,7 +53,7 @@ class ExceptionNotifier
 
     unless ignored_exception(options[:ignore_exceptions], exception)       ||
            from_crawler(options[:ignore_crawlers], env['HTTP_USER_AGENT']) ||
-           conditionally_ignored(options[:ignore_if], env, exception)
+           self.class.conditionally_ignored(options[:ignore_if], env, exception)
       Notifier.exception_notification(env, exception).deliver
       @campfire.exception_notification(exception)
       @logger.exception_notification(env, exception)
@@ -67,12 +73,6 @@ class ExceptionNotifier
     ignore_array.each do |crawler|
       return true if (agent =~ Regexp.new(crawler))
     end unless ignore_array.blank?
-    false
-  end
-
-  def conditionally_ignored(ignore_proc, env, exception)
-    ignore_proc.call(env, exception)
-  rescue Exception => ex
     false
   end
 end
