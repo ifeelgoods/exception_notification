@@ -43,6 +43,8 @@ class ExceptionNotifier
     @options[:ignore_if]         ||= lambda { |env, e| false }
 
     @logger = Logger.new @options[:logger]
+
+    Notifier.ignore_if = @options[:ignore_if]
   end
 
   def call(env)
