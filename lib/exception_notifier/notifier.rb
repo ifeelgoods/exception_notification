@@ -18,6 +18,7 @@ class ExceptionNotifier
       attr_writer :default_verbose_subject
       attr_writer :default_normalize_subject
       attr_writer :default_smtp_settings
+      attr_writer :ignore_if
 
       def default_sender_address
         @default_sender_address || %("Exception Notifier" <exception.notifier@default.com>)
@@ -71,6 +72,10 @@ class ExceptionNotifier
       def normalize_digits(string)
         string.gsub(/[0-9]+/, 'N')
       end
+
+      def ignore_if
+        @ignore_if || lambda { |env, e| false }
+      end
     end
 
     class MissingController
@@ -79,7 +84,7 @@ class ExceptionNotifier
     end
 
     def self.notify(exception, options={})
-      exception_notification(Rails.env, exception, options)
+      exception_notification(Rails.env, exception, options).deliver unless ExceptionNotifier.conditionally_ignored(ignore_if, Rails.env, exception)
     end
 
     def exception_notification(env, exception, options={})
