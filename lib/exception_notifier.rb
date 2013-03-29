@@ -1,7 +1,6 @@
 require 'action_dispatch'
 require 'exception_notifier/notifier'
 require 'exception_notifier/campfire_notifier'
-require 'exception_notifier/logger'
 
 class ExceptionNotifier
 
@@ -42,8 +41,6 @@ class ExceptionNotifier
     @options[:ignore_crawlers]   ||= self.class.default_ignore_crawlers
     @options[:ignore_if]         ||= lambda { |env, e| false }
 
-    @logger = Logger.new @options[:logger]
-
     Notifier.ignore_if = @options[:ignore_if]
   end
 
@@ -58,7 +55,6 @@ class ExceptionNotifier
            self.class.conditionally_ignored(options[:ignore_if], env, exception)
       Notifier.exception_notification(env, exception).deliver
       @campfire.exception_notification(exception)
-      @logger.exception_notification(env, exception)
       env['exception_notifier.delivered'] = true
     end
 
