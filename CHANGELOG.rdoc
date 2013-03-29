@@ -1,8 +1,26 @@
+== 3.0.2
+
+* enhancements
+  * Rails 4 compatible
+
+* bug fixes
+  * Don't error if Rails isn't defined. (by @dpogue)
+  * Fix call to #normalize_digits (by @ghiculescu)
+
+== 3.0.1
+
+* enhancements
+  * Custom Headers (by @DouweM)
+  * Make Tinder a soft-dependency (by @fgrehm)
+
+* bug fixes
+  * Fix `code converter not found` (by @alanjds)
+
 == 3.0.0
 
 * enhancements
   * Campfire integration
-  * Support fot HTML notifications (by @Xenofex)
+  * Support for HTML notifications (by @Xenofex)
   * Be able to override SMTP settings (by @piglop and @Macint)
 
 * bug fixes

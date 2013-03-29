@@ -35,13 +35,41 @@ Whatever::Application.config.middleware.use ExceptionNotifier,
   :exception_recipients => %w{exceptions@example.com}
 ```
 
+ActionMailer Configuration
+---
+
+For the email to be sent, there must be a default ActionMailer delivery_method setting configured. 
+If you do not have one, you can use the following code (assuming your app server machine has sendmail). 
+Depending on the environment you want ExceptionNotification to run in, put the following code in your
+config/production.rb and/or config/development.rb:
+
+```ruby
+config.action_mailer.delivery_method = :sendmail
+# Defaults to:
+# config.action_mailer.sendmail_settings = {
+#   :location => '/usr/sbin/sendmail',
+#   :arguments => '-i -t'
+# }
+config.action_mailer.perform_deliveries = true
+config.action_mailer.raise_delivery_errors = true
+```
+
+
 Campfire Integration
 ---
 
 Additionally, ExceptionNotification supports sending notifications to
 your Campfire room.
+
+First you'll need to add [tinder](https://github.com/collectiveidea/tinder)
+to your `Gemfile`:
+
+```ruby
+gem 'tinder'
+```
+
 To configure it, you need to set the subdomain, token and room name,
-like this
+like this:
 
 ```ruby
 Whatever::Application.config.middleware.use ExceptionNotifier,
@@ -90,7 +118,7 @@ Whatever::Application.config.middleware.use ExceptionNotifier,
  :sections => %w{my_section1 my_section2} + ExceptionNotifier::Notifier.default_sections
 ```
 
-Place your custom sections under `./app/views/exception_notifier/` with the suffix `.text.erb`, e.g. 
+Place your custom sections under `./app/views/exception_notifier/` with the suffix `.text.erb`, e.g.
 `./app/views/exception_notifier/_my_section1.text.erb`.
 
 If your new section requires information that isn't available by default, make sure
@@ -191,6 +219,20 @@ Whatever::Application.config.middleware.use ExceptionNotifier,
 
 You can make use of both the environment and the exception inside the lambda to decide wether to
 avoid or not sending the notification.
+
+### Headers
+
+Additionally, you may want to set customized headers on the outcoming
+emails. To do so, simply use the _:email_headers_ option:
+
+```ruby
+Whatever::Application.config.middleware.use ExceptionNotifier,
+  :email_prefix         => "[Whatever] ",
+  :sender_address       => %{"notifier" <notifier@example.com>},
+  :exception_recipients => %w{exceptions@example.com},
+  :ignore_if            => lambda { |env, e| e.message =~ /^Couldn't find Page with ID=/ },
+  :email_headers        => { "X-Custom-Header" => "foobar" }
+```
 
 ### Verbose
 
