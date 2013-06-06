@@ -90,7 +90,18 @@ class ExceptionNotifier
     end
 
     def self.notify(exception, options={})
-      exception_notification(Rails.env, exception, options).deliver unless ExceptionNotifier.conditionally_ignored(ignore_if, Rails.env, exception)
+      begin
+        exception_notification(Rails.env, exception, options).deliver unless ExceptionNotifier.conditionally_ignored(ignore_if, Rails.env, exception)
+      rescue Exception => e
+        Rails.logger.info "##############"
+        Rails.logger.info "Exception notifier fail to send email"
+        Rails.logger.info "Exception #{e}"
+        Rails.logger.info "backtrace #{e.backtrace}"
+        Rails.logger.info "original exception #{exception}"
+        Rails.logger.info "original backtrace #{exception.backtrace}"
+        Rails.logger.info "##############"
+      end
+
     end
 
     def exception_notification(env, exception, options={})
