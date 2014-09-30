@@ -29,10 +29,14 @@ module ExceptionNotifier
     # Store notifiers that send notifications when exceptions are raised.
     @@notifiers = {}
 
+    # Store eventual options to display in the notifications
+    @@initial_options = {}
+
     def notify_exception(exception, options={})
       return false if ignored_exception?(options[:ignore_exceptions], exception)
       return false if ignored?(exception, options)
       selected_notifiers = options.delete(:notifiers) || notifiers
+      merge_additional_options!(options)
       [*selected_notifiers].each do |notifier|
         fire_notification(notifier, exception, options.dup)
       end
@@ -71,11 +75,23 @@ module ExceptionNotifier
       @@ignores << block
     end
 
+    # Adds options to a section of
+    def add_additional_options(name, options)
+      @@initial_options[name] = options
+    end
+
     def clear_ignore_conditions!
       @@ignores.clear
     end
 
     private
+
+    def merge_additional_options!(options)
+      if @@initial_options.any?
+        options.replace(@@initial_options.deep_merge(options))
+      end
+    end
+
     def ignored?(exception, options)
       @@ignores.any?{ |condition| condition.call(exception, options) }
     rescue Exception => e
